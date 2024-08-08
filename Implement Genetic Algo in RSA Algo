@@ -1,0 +1,244 @@
+import random
+
+class gen_algo:
+    def genetic_algorithm(key):
+        
+        target_number = key
+
+        # Number of individuals in each generation
+        population_size = 100
+
+        # Number of generations
+        num_generations = 100
+
+        # Range of possible values for each gene (digit in the key)
+        gene_range = (0, 9)
+
+        # Probability of mutation (0.01 = 1%)
+        mutation_rate = 0.01
+
+        def generate_individual():
+            """Generate a random individual."""
+            individual = []
+            for _ in range(len(str(target_number))):
+                gene = random.randint(*gene_range)
+                individual.append(gene)
+            return individual
+
+        def calculate_fitness(individual):
+            """Calculate the fitness of an individual based on its proximity to the target number."""
+            individual_number = int("".join(str(gene) for gene in individual))
+            fitness = 1 / (abs(individual_number - target_number) + 1)
+            return fitness
+
+        def mutate(individual):
+            """Mutate an individual by randomly changing one of its genes."""
+            mutated_individual = individual.copy()
+            gene_index = random.randint(0, len(individual) - 1)
+            mutated_individual[gene_index] = random.randint(*gene_range)
+            return mutated_individual
+
+        def crossover(parent1, parent2):
+            """Perform crossover between two parents to create two children."""
+            crossover_point = random.randint(1, len(parent1) - 1)
+            child1 = parent1[:crossover_point] + parent2[crossover_point:]
+            child2 = parent2[:crossover_point] + parent1[crossover_point:]
+            return child1, child2
+
+        def select_parents(population):
+            """Select two parents from the population using tournament selection."""
+            tournament_size = 5
+            tournament = random.sample(population, tournament_size)
+            tournament.sort(key=lambda individual: calculate_fitness(individual), reverse=True)
+            parent1 = tournament[0]
+            parent2 = tournament[1]
+            return parent1, parent2
+
+        def generate_next_generation(current_generation):
+            """Generate the next generation using selection, crossover, and mutation."""
+            next_generation = []
+            while len(next_generation) < population_size:
+                parent1, parent2 = select_parents(current_generation)
+                child1, child2 = crossover(parent1, parent2)
+                if random.random() < mutation_rate:
+                    child1 = mutate(child1)
+                if random.random() < mutation_rate:
+                    child2 = mutate(child2)
+                next_generation.append(child1)
+                next_generation.append(child2)
+            return next_generation
+
+        def run_genetic_algorithm():
+            """Run the genetic algorithm."""
+            population = [generate_individual() for _ in range(population_size)]
+
+            for generation in range(num_generations):
+                population_fitness = [(individual, calculate_fitness(individual)) for individual in population]
+                population_fitness.sort(key=lambda x: x[1], reverse=True)
+
+                best_individual, best_fitness = population_fitness[0]
+
+                if best_fitness == 1:
+                    break
+
+                population = generate_next_generation([individual for individual, _ in population_fitness])
+
+            best_individual, best_fitness = population_fitness[0]
+            # print(f"\nBest individual found: {best_individual}")
+            # print(f"Fitness: {best_fitness}")
+            listToStr = ''.join([str(elem) for elem in best_individual])
+            return listToStr
+        
+        return run_genetic_algorithm()
+
+class rsa_keys:
+
+    def generate(rng_start,rng_end):
+        rng_start = int(rng_start)
+        rng_end = int(rng_end)
+
+        print("generating random prime number........")
+        p = rsa_keys.generate_prime(rng_start,rng_end)
+        q = rsa_keys.generate_prime(rng_start,rng_end)
+        while p == q:
+            q = rsa_keys.generate_prime(rng_start,rng_end)
+        print(f"genarated prime numbers are {p} and {q}")
+
+        print("generating public and private key .......")
+        public_key , private_key,listofkeys = rsa_keys.generate_keys(p,q)
+        print(f"............By RSA Algorithm............\nyour public key is  {public_key}\nyour private key is  {private_key}")
+        return listofkeys
+
+
+
+    def check_prime(prime):
+        if prime%2==0:
+            return False
+        for i in range(3,int(prime**0.5)+2,2):
+            if prime%i==0:
+                return False
+        else:
+            return True
+
+
+  
+    def generate_prime(start,end):
+        prime = random.randrange(start,end+1)
+        while rsa_keys.check_prime(prime) == False:
+            prime = random.randrange(start,end+1)
+        
+        return prime 
+
+
+    def check_coprime(a,b):
+        while b != 0:
+            a , b = b , a%b 
+        if a == 1:
+            return False
+        else:
+            return True
+
+
+    def multiplicative_inverse(e, phi):
+        if e == 0:
+            x = 0 
+            y = 1
+            return x,y
+        x,y = rsa_keys.multiplicative_inverse(phi%e,e)
+        x , y = y - (phi//e)*x , x
+        return x , y      
+
+
+    def generate_keys(p,q):
+        n = p*q
+        phi = (p-1) * (q-1)
+
+        e = random.randrange(2,phi)
+        while rsa_keys.check_coprime(e,phi) :
+            e = random.randrange(2,phi)
+
+        d , unwanted_value = rsa_keys.multiplicative_inverse(e,phi)
+        d %= phi
+        return (e,n),(d,n),[e,d,n]
+
+
+class rsa_cipher:
+
+    def encrypt(message,key):
+        cipher = []
+        e,n = key
+        for char in message:
+            mod = pow(ord(char),e,n)
+            cipher.append(str(mod))
+        cipher = ','.join(cipher)
+        return cipher
+
+    
+    def Decrypt(cipher,key):
+        cipher = cipher.split(",")
+        message = ""
+        d, n = key
+        for cip in cipher:
+            char = chr(pow(int(cip),d,n))
+            message += char
+        return message
+
+
+
+class main:
+
+    def _main_(command):
+        comm = command.split(' ')
+        if comm[0] == "keys":
+            try:
+                range_ = comm[1].split(',')
+                genetic_key = rsa_keys.generate(range_[0],range_[1])
+                # print(genetic_key)
+                n = gen_algo.genetic_algorithm(genetic_key[2])
+                print("............Genetic Algorithm............")
+                print(f"Genetic algorithm public key: ({gen_algo.genetic_algorithm(genetic_key[0])}, {n})")
+                print(f"Genetic algorithm privet key: ({gen_algo.genetic_algorithm(genetic_key[1])}, {n})")
+            except:
+                
+                genetic_key = rsa_keys.generate(10000,99999)
+                # print(genetic_key)
+                n = gen_algo.genetic_algorithm(genetic_key[2])
+                print("............Genetic Algorithm............")
+                print(f"Genetic algorithm public key: ({gen_algo.genetic_algorithm(genetic_key[0])}, {n})")
+                print(f"Genetic algorithm privet key: ({gen_algo.genetic_algorithm(genetic_key[1])}, {n})")
+        elif comm[0] == "e":
+            message = input("enter message to encrypt : ")
+            try:
+                key = eval(input("enter public key : "))
+                cipher = rsa_cipher.encrypt(message,key)
+                print(f"RSA cipher is \n{cipher}")
+            except:
+                print("there is a problem while calculating :(\nenter key in this formate (e,n)")
+        elif comm[0] == "d":
+            cipher = input("enter cipher : ")
+            # try:
+            key = eval(input("enter private key : "))
+            message = rsa_cipher.Decrypt(cipher,key)
+            print(f"Decrypted message is: {message}")
+            # except:
+            #     print("there is a problem while calculating :(\nenter key in this formate (d,n)")
+        elif command=="exit":
+            pass
+
+        else:
+            print("command not found try again ")
+
+
+mode = '''\nselect modes from here
+to generate public and private key type "keys" and followed by range -- 
+for example = ("keys 1000,9999")
+to encrypt message type "e"
+to decrypt message type "d"
+to quit type "exit"'''
+print(mode)
+
+while True:
+    command = input(">>> ")
+    main._main_(command)
+    if command == "exit":
+        break
