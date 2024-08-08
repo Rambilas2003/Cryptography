@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+	<meta http-equiv="Content-Type" content="text/html" charset="Windows-1252">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Cryptography</title>
+	<link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}">
+</head>
+<body>
+	<div class="main">  	
+		<input type="checkbox" id="chk" aria-hidden="true">
+
+			<div class="signup">
+				<form action="{{url_for('encryption')}}" method="post">
+					<label for="chk" aria-hidden="true">Encryption</label>
+					<input type="text" name="txt" placeholder="Your Text">
+					<button>Encrypt</button>
+                    <p>{{msg}}</p>
+                    <p>{{key}}</p>
+				</form>
+			</div>
+
+			<div class="login" aria-hidden="true">
+				<form action="{{url_for('decryption')}}" method="post">
+					<label for="chk" aria-hidden="true">Decryption</label>
+					<input type="text" name="key" placeholder="Decryption Key">
+					<input type="text" name="txt"data-validation="alphanumeric" placeholder="Encrypted Text">
+					<button>Decrypt</button>
+					<p>{{msg1}}</p>
+				</form>
+			</div>
+	</div>
+</body>
+</html>
